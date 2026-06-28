@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Bookings Management</h1>
+
+        <button
+            class="btn btn-secondary"
+            onclick="window.location.href='/admin/dashboard'">
+            Back
+        </button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Book</th>
+                <th>Borrow Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th width="120">Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="bookingTableBody">
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<script>
+
+async function loadBookings() {
+
+    const response = await fetch("/booking/all");
+
+    const bookings = await response.json();
+
+    const tbody =
+        document.getElementById("bookingTableBody");
+
+    tbody.innerHTML = "";
+
+    bookings.forEach(booking => {
+
+        let actionButton = "";
+
+        if (booking.status === "BORROWED") {
+
+            actionButton = `
+                <button
+                    class="btn btn-success btn-sm"
+                    onclick="returnBook(${booking.id})">
+                    Return
+                </button>
+            `;
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${booking.id}</td>
+                <td>${booking.user.name}</td>
+                <td>${booking.book.title}</td>
+                <td>${booking.borrowDate}</td>
+                <td>${booking.dueDate}</td>
+                <td>${booking.status}</td>
+                <td>${actionButton}</td>
+            </tr>
+        `;
+    });
+}
+
+async function returnBook(id) {
+
+    const response =
+        await fetch("/booking/return/" + id, {
+            method: "POST"
+        });
+
+    if(response.ok) {
+
+        alert("Book Returned");
+
+        loadBookings();
+
+    } else {
+
+        alert("Return Failed");
+
+    }
+}
+
+loadBookings();
+
+</script>
+
+</body>
+</html>
+
